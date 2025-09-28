@@ -20,4 +20,5 @@ module "argocd" {
   github_pat          = var.github_pat
   github_repo_url     = var.github_repo_url
   github_username     = var.github_username
+  kubeconfig_path     = module.minikube.kubeconfig_path
 }

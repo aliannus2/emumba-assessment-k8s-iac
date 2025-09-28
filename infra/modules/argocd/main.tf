@@ -57,7 +57,6 @@ resource "helm_release" "argocd" {
   depends_on = [kubernetes_namespace.argocd]
 }
 
-# Repo credential (HTTPS + PAT)
 resource "kubernetes_secret" "argocd_repo_github_https" {
   metadata {
     name      = "repo-github-emumba-https"
@@ -73,7 +72,6 @@ resource "kubernetes_secret" "argocd_repo_github_https" {
   }
 }
 
-# AppProject that your Application references
 resource "kubernetes_manifest" "emumba_project" {
   manifest = {
     apiVersion = "argoproj.io/v1alpha1"
@@ -85,7 +83,7 @@ resource "kubernetes_manifest" "emumba_project" {
     }
     spec = {
       description = "Project for Emumba assessment"
-      sourceRepos = [var.github_repo_url] # or ["*"]
+      sourceRepos = [var.github_repo_url]
       destinations = [{
         namespace = "emumba-assessment"
         server    = "https://kubernetes.default.svc"
@@ -97,7 +95,6 @@ resource "kubernetes_manifest" "emumba_project" {
   depends_on = [helm_release.argocd]
 }
 
-# Application that deploys your Kustomize overlay
 resource "kubernetes_manifest" "app" {
   manifest = {
     apiVersion = "argoproj.io/v1alpha1"

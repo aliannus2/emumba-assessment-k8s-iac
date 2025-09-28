@@ -7,7 +7,6 @@ terraform {
   }
 }
 
-# Build the start command from your variables (no addons)
 locals {
   start_cmd = join(" ", [
     "minikube start",
@@ -21,9 +20,7 @@ locals {
   ])
 }
 
-# Start a Minikube cluster
 resource "null_resource" "minikube_cluster" {
-  # Keep it simple: if any input changes, re-run using a single trigger
   triggers = {
     cmd          = local.start_cmd
     profile_name = var.cluster_name
@@ -35,7 +32,6 @@ resource "null_resource" "minikube_cluster" {
 
   provisioner "local-exec" {
     when = destroy
-    # Destroy-time provisioners may only reference self.*, so use trigger
     command = "minikube delete -p ${self.triggers.profile_name}"
   }
 }

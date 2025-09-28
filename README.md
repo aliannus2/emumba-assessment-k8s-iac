@@ -1,43 +1,174 @@
-# Simple Microservice Example
+# GitOps Kubernetes Setup
 
-A very simple microservice example with NodeJS, Python and Docker
+A simple GitOps-style local Kubernetes setup using **Terraform**, **Minikube**, **Argo CD**, and **Kustomize**.
 
-## Run the API gateway
+## Prerequisites
 
-- Install `docker` and `docker-compose` according to your operating system
+Install the following tools for your operating system:
+- Docker
+- Terraform (>= 1.10)
+- Minikube
+- kubectl
+- Helm
+- Kustomize
 
-- Clone the repository and navigate to it
+## Getting Started
 
-- Run `docker-compose up` to start the services
+### 1. Clone and Setup
 
-- Try `GET http://YOUR_HOST:3000/api/status` to check whether application is running
+```bash
+git clone <repository-url>
+cd emumba-assessment-k8s-iac
+```
 
-## Build the frontend
+### 2. Configure Terraform Variables
 
-The application uses a frontend written with plain html with jQuery and to style with Bulma.
-This is built with webpack. This default application is built assuming you are using the `localhost`.
+Create `infra/terraform.tfvars` with your local settings and GitHub token (**do not** commit this file):
 
-To build this to fit your own **IP Address** please follow the steps before you running the `docker-compose up`
+```hcl
+# --- Cluster Configuration ---
+cluster_name        = "emumba-minikube-cluster"
+kubernetes_version  = "v1.30.0"
+driver              = "docker"
+nodes               = 3
+cpus                = 4
+memory              = "8192mb"
+cni                 = "bridge"
+delete_on_failure   = true
 
-- Install NodeJs on your system
+# --- Argo CD Configuration ---
+namespace           = "argocd"
+release_name        = "argo-cd"
+server_service_type = "NodePort"
 
-- Go to FrontendApplication directory
+# --- Repository Configuration ---
+github_repo_url     = "https://github.com/<your-username>/emumba-assessment-k8s-iac.git"
+github_pat          = "ghp_********"
+```
 
-- Run `npm install` or if you have yarn `yarn` to install packages
+### 3. Deploy the Stack
 
-- Now you need to set the API Gateway for this frontend application. It can be any host you have. 
-    - Let's say you are hosting this application on `http://example.com` then your `API_GATEWAY` would be this one. 
-    - If you are hosting in some machine with IP `123.324.345.1` then your `API_GATEWAY` would be your IP.
+From the `infra` directory, run Terraform to:
+- Start Minikube cluster
+- Install Argo CD
+- Bootstrap GitOps
 
-- To pass this setting to webpack build you need to set an Environment Variable
-    - Windows : `set API_GATEWAY=http://YOUR_HOST`
-    - Linux/Max : `API_GATEWAY=http://YOUR_HOST`
-    * Remember no / at the end of the URL to get your web app work
+```bash
+cd infra
+terraform init
+terraform apply -auto-approve
+```
 
-- Now you can do `npm run build` or `yarn build`
+### 4. Verify Deployment
 
-- Check `dist/` folder for newly created index.html and the main.js
+Check if everything is running correctly:
 
-- Now run the `docker-compose up` on the root folder of project and check `http://YOUR_HOST:8080` to see web app 
+```bash
+# Check Argo CD applications
+kubectl -n argocd get appprojects,applications
 
-![image](https://user-images.githubusercontent.com/13379595/42726706-82eb0ae6-87b6-11e8-8456-d933b9dfa73b.png)
+# Check application deployments
+kubectl -n emumba-assessment get deploy,svc
+```
+
+## GitOps Configuration
+
+This repository follows GitOps principles:
+
+- **Manifest Location**: All Kubernetes manifests are stored under `k8s/`
+- **Sync Path**: Argo CD syncs from `k8s/overlays/dev`
+- **Automated Deployment**: No manual `kubectl apply` required
+- **Change Tracking**: Argo CD automatically tracks and syncs repository changes
+
+### Repository Configuration
+
+If you fork this repository to a different location, update the `github_repo_url` in `infra/terraform.tfvars` before applying Terraform.
+
+### Environment Variables (Optional)
+
+For scripting purposes, you can set your GitHub PAT as an environment variable:
+
+**Windows:**
+```cmd
+set GITHUB_PAT=ghp_********
+```
+
+**Linux/macOS:**
+```bash
+export GITHUB_PAT=ghp_********
+```
+
+> **Note:** Your PAT is only used by Terraform providers. Never commit it to the repository.
+
+## Directory Structure
+
+```
+emumba-assessment-k8s-iac/
+├── README.md
+├── infra/                          # Terraform infrastructure code
+│   ├── providers.tf
+│   ├── variables.tf
+│   ├── main.tf
+│   ├── outputs.tf
+│   └── terraform.tfvars            # Local config (not committed)
+├── modules/                        # Terraform modules
+│   └── minikube/
+│       ├── main.tf                 # Minikube cluster setup
+│       ├── variables.tf
+│       └── outputs.tf
+└── k8s/                           # Kubernetes manifests
+    ├── base/                      # Base configurations
+    │   ├── namespace.yaml
+    │   ├── resourcequota.yaml
+    │   ├── rbac/
+    │   │   ├── role-readonly.yaml
+    │   │   ├── role-readwrite.yaml
+    │   │   ├── rolebinding-readonly.yaml
+    │   │   └── rolebinding-readwrite.yaml
+    │   ├── apigateway/
+    │   │   ├── deployment.yaml
+    │   │   ├── service.yaml
+    │   │   └── configmap.yaml
+    │   ├── quoteservice/
+    │   │   ├── deployment.yaml
+    │   │   ├── service.yaml
+    │   │   └── configmap.yaml
+    │   ├── frontend/
+    │   │   ├── deployment.yaml
+    │   │   ├── service.yaml
+    │   │   └── configmap.yaml
+    │   └── kustomization.yaml
+    └── overlays/
+        └── dev/
+            └── kustomization.yaml
+```
+
+## Architecture Components
+
+- **Terraform**: Infrastructure as Code for cluster provisioning
+- **Minikube**: Local Kubernetes cluster
+- **Argo CD**: GitOps continuous deployment
+- **Kustomize**: Configuration management and overlays
+
+## Clean Up
+
+To destroy all resources and stop the Minikube cluster:
+
+```bash
+cd infra
+terraform destroy
+```
+
+This will remove:
+- Minikube cluster
+- Argo CD installation
+- All GitOps applications and configurations
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Docker not running**: Ensure Docker Desktop is started before running Terraform
+2. **Port conflicts**: Check if required ports are available on your system
+3. **Resource limits**: Adjust CPU and memory settings in `terraform.tfvars` if needed
+4. **GitHub PAT permissions**: Ensure your PAT has appropriate repository access

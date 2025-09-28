@@ -38,3 +38,8 @@ variable "github_username" {
   description = "GitHub username or organization name"
   default     = "aliannus2"
 }
+
+variable "kubeconfig_path" {
+  type        = string
+  description = "Path to kubeconfig file"
+}
