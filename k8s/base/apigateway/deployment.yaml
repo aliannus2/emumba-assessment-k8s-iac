@@ -3,21 +3,20 @@ kind: Deployment
 metadata:
   name: apigateway
   namespace: emumba-assessment
-  labels: &lbl
+  labels: &albl
     app.kubernetes.io/name: apigateway
     app.kubernetes.io/part-of: emumba-assessment-k8s-iac
 spec:
   replicas: 2
-  selector: { matchLabels: *lbl }
+  selector: { matchLabels: *albl }
   template:
-    metadata: { labels: *lbl }
+    metadata: { labels: *albl }
     spec:
       containers:
       - name: apigateway
         image: annasali2/emumba-apigateway:latest
         ports: [{ containerPort: 3000 }]
-        envFrom:
-        - configMapRef: { name: apigateway-config }
+        envFrom: [{ configMapRef: { name: apigateway-config } }]
         readinessProbe:
           httpGet: { path: /api/status, port: 3000 }
           initialDelaySeconds: 5
@@ -33,5 +32,4 @@ spec:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
           whenUnsatisfiable: ScheduleAnyway
-          labelSelector:
-            matchLabels: *lbl
+          labelSelector: { matchLabels: *albl }

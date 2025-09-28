@@ -3,26 +3,25 @@ kind: Deployment
 metadata:
   name: quoteservice
   namespace: emumba-assessment
-  labels: &lbl
+  labels: &qlbl
     app.kubernetes.io/name: quoteservice
     app.kubernetes.io/part-of: emumba-assessment-k8s-iac
 spec:
   replicas: 2
-  selector: { matchLabels: *lbl }
+  selector: { matchLabels: *qlbl }
   template:
-    metadata: { labels: *lbl }
+    metadata: { labels: *qlbl }
     spec:
       containers:
       - name: quoteservice
         image: annasali2/emumba-quoteservice:latest
-        ports: [{ containerPort: 5000 }]            # TODO confirm port
-        envFrom:
-        - configMapRef: { name: quoteservice-config }
+        ports: [{ containerPort: 5000 }]
+        envFrom: [{ configMapRef: { name: quoteservice-config } }]
         readinessProbe:
-          httpGet: { path: /healthz, port: 5000 }   # TODO confirm path
+          httpGet: { path: /healthz, port: 5000 }
           initialDelaySeconds: 5
         livenessProbe:
-          httpGet: { path: /healthz, port: 5000 }   # TODO confirm path
+          httpGet: { path: /healthz, port: 5000 }
           initialDelaySeconds: 10
         resources:
           requests: { cpu: "100m", memory: "128Mi" }
@@ -31,4 +30,4 @@ spec:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
           whenUnsatisfiable: ScheduleAnyway
-          labelSelector: { matchLabels: *lbl }
+          labelSelector: { matchLabels: *qlbl }

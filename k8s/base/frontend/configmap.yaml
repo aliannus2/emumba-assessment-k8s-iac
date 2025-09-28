@@ -4,4 +4,4 @@ metadata:
   name: frontend-config
   namespace: emumba-assessment
 data:
-  API_GATEWAY: "http://apigateway.emumba-assessment.svc.cluster.local:3000"
+  API_GATEWAY: "http://apigateway:3000"

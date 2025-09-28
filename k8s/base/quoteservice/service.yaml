@@ -7,5 +7,8 @@ spec:
   selector:
     app.kubernetes.io/name: quoteservice
   ports:
-  - port: 5000   # TODO confirm
+  - name: http
+    port: 5000
     targetPort: 5000
+    protocol: TCP
+  type: ClusterIP
