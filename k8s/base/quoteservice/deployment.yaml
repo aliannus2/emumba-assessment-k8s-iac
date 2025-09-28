@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: quoteservice
-        image: annasali2/emumba-quoteservice:latest
+        image: annasali2/emumba-quouteservice:latest
         ports: [{ containerPort: 5000 }]
         envFrom: [{ configMapRef: { name: quoteservice-config } }]
         readinessProbe:
