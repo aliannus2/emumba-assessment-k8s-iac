@@ -1,14 +1,13 @@
 terraform {
   required_version = ">= 1.10.0"
-
   required_providers {
+    null = {
+      source  = "hashicorp/null"
+      version = "3.2.4"
+    }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "2.38.0"
-    }
-    minikube = {
-      source  = "scott-the-programmer/minikube"
-      version = ">= 0.5.3"
+      version = ">= 2.38.0"
     }
     helm = {
       source  = "hashicorp/helm"
@@ -18,21 +17,12 @@ terraform {
 }
 
 provider "kubernetes" {
-  host                   = module.minikube.host
-  client_certificate     = module.minikube.client_certificate
-  client_key             = module.minikube.client_key
-  cluster_ca_certificate = module.minikube.cluster_ca_certificate
+  config_path = "~/.kube/config" 
 }
 
 provider "helm" {
   kubernetes = {
-    host                   = module.minikube.host
-    client_certificate     = module.minikube.client_certificate
-    client_key             = module.minikube.client_key
-    cluster_ca_certificate = module.minikube.cluster_ca_certificate
+    config_path    = "~/.kube/config"
+    config_context = "emumba-minikube-cluster"
   }
-
-  # keep repo cache local to the repo (prevents Temp-path issues on Windows)
-  repository_config_path = "${path.module}/.helm/repositories.yaml"
-  repository_cache       = "${path.module}/.helm/cache"
 }

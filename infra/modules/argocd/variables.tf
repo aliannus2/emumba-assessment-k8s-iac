@@ -13,5 +13,5 @@ variable "release_name" {
 variable "server_service_type" {
   description = "Service type for Argo CD server"
   type        = string
-  default     = "NodePort" # good for local
+  default     = "NodePort"
 }

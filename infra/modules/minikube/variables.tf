@@ -31,11 +31,13 @@ variable "memory" {
 variable "cni" {
   description = "CNI plugin (auto, bridge, calico, cilium, flannel, kindnet, or path)"
   type        = string
+  default     = "bridge"
 }
 
 variable "addons" {
   description = "Minikube addons to enable"
   type        = set(string)
+
 }
 
 variable "delete_on_failure" {
