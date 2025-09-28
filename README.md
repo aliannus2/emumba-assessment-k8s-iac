@@ -161,14 +161,13 @@ extra_flags         = ["--addons=ingress,metrics-server", "--preload=false"]
 ```hcl
 namespace           = "argocd"
 release_name        = "argo-cd"
-server_service_type = "ClusterIP"   # or "NodePort" / "LoadBalancer"
+server_service_type = "NodePort"
 chart_version       = "8.5.7"
-# extra_values_yaml = []
 ```
 
 ### projects/application/terraform.tfvars
 ```hcl
-cluster_name          = "emumba-minikube-cluster"   # Kubernetes context to use
+cluster_name          = "emumba-minikube-cluster"
 argocd_namespace      = "argocd"
 application_namespace = "emumba-assessment"
 
@@ -176,7 +175,7 @@ project_name          = "emumba-deployment"
 application_name      = "emumba-assessment-app"
 
 github_repo_url = "https://github.com/your-org/your-repo.git"
-github_pat      = ""                                 # Prefer env: TF_VAR_github_pat
+github_pat      = ""
 kustomize_path  = "k8s/overlays/dev"
 target_revision = "HEAD"
 ```
