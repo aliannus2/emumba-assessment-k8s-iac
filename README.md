@@ -267,7 +267,3 @@ terraform destroy -auto-approve
   - Argo CD Application (pointing at `github_repo_url` + `kustomize_path`)
 
 - **Security:** Always prefer `TF_VAR_github_pat` environment variable over committing tokens to files or shell history
-
----
-
-**Happy GitOps-ing!** 🚀
