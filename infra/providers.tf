@@ -17,22 +17,22 @@ terraform {
   }
 }
 
-# provider "kubernetes" {
-#   host                   = module.minikube.host
-#   client_certificate     = module.minikube.client_certificate
-#   client_key             = module.minikube.client_key
-#   cluster_ca_certificate = module.minikube.cluster_ca_certificate
-# }
+provider "kubernetes" {
+  host                   = module.minikube.host
+  client_certificate     = module.minikube.client_certificate
+  client_key             = module.minikube.client_key
+  cluster_ca_certificate = module.minikube.cluster_ca_certificate
+}
 
-# provider "helm" {
-#   kubernetes = {
-#     host                   = module.minikube.host
-#     client_certificate     = module.minikube.client_certificate
-#     client_key             = module.minikube.client_key
-#     cluster_ca_certificate = module.minikube.cluster_ca_certificate
-#   }
+provider "helm" {
+  kubernetes = {
+    host                   = module.minikube.host
+    client_certificate     = module.minikube.client_certificate
+    client_key             = module.minikube.client_key
+    cluster_ca_certificate = module.minikube.cluster_ca_certificate
+  }
 
-#   # keep repo cache local to the repo (prevents Temp-path issues on Windows)
-#   repository_config_path = "${path.module}/.helm/repositories.yaml"
-#   repository_cache       = "${path.module}/.helm/cache"
-# }
+  # keep repo cache local to the repo (prevents Temp-path issues on Windows)
+  repository_config_path = "${path.module}/.helm/repositories.yaml"
+  repository_cache       = "${path.module}/.helm/cache"
+}

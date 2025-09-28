@@ -1,7 +1,7 @@
 module "minikube" {
   source = "./modules/minikube"
 
-  cluster_name       = "emumba-minikube-cluster"
+  cluster_name       = "emumba-minikube-cluster-iac"
   kubernetes_version = var.minikube_kubernetes_version
   driver             = var.minikube_driver
   nodes              = var.minikube_nodes
@@ -12,11 +12,11 @@ module "minikube" {
   delete_on_failure  = var.minikube_delete_on_failure
 }
 
-# module "argocd" {
-#   depends_on = [module.minikube]
-#   source     = "./modules/argocd"
+module "argocd" {
+  depends_on = [module.minikube]
+  source     = "./modules/argocd"
 
-#   namespace           = "argocd"
-#   release_name        = "argo-cd"
-#   server_service_type = "NodePort"
-# }
+  namespace           = "argocd"
+  release_name        = "argo-cd"
+  server_service_type = "NodePort"
+}
