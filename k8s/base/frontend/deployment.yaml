@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: ghcr.io/your/repo/frontend:dev       # TODO update
+        image: annasali2/emumba-frontend:latest
         ports: [{ containerPort: 8080 }]
         envFrom:
         - configMapRef: { name: frontend-config }

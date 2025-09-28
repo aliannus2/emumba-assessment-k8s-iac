@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: quoteservice
-        image: ghcr.io/your/repo/quoteservice:dev   # TODO update
+        image: annasali2/emumba-quoteservice:latest
         ports: [{ containerPort: 5000 }]            # TODO confirm port
         envFrom:
         - configMapRef: { name: quoteservice-config }

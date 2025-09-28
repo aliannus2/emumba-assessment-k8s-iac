@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: apigateway
-        image: ghcr.io/your/repo/apigateway:dev    # TODO update
+        image: annasali2/emumba-apigateway:latest
         ports: [{ containerPort: 3000 }]
         envFrom:
         - configMapRef: { name: apigateway-config }
