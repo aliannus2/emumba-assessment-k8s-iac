@@ -1,0 +1,15 @@
+minikube_driver             = "docker"
+minikube_nodes              = 3
+minikube_cpus               = 4
+minikube_memory             = "8192mb"
+minikube_kubernetes_version = "v1.30.0"
+minikube_cni                = "bridge"
+minikube_addons = [
+  "dashboard",
+  "default-storageclass",
+  "ingress",
+  "metrics-server",
+  "storage-provisioner",
+]
+minikube_delete_on_failure  = true
+minikube_cluster_name      = "minikube-cluster"
