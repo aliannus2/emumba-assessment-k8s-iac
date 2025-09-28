@@ -1,5 +1,5 @@
 variable "namespace" {
-  description = "Namespace for Argo CD"
+  description = "Namespace for Argo CD control plane"
   type        = string
   default     = "argocd"
 }
@@ -11,35 +11,39 @@ variable "release_name" {
 }
 
 variable "server_service_type" {
-  description = "Service type for Argo CD server"
+  description = "Service type for argocd-server (ClusterIP|NodePort|LoadBalancer)"
   type        = string
-  default     = "NodePort"
+  default     = "ClusterIP"
 }
 
-variable "application_name" {
-  description = "Name of the Argo CD Application"
+variable "chart_version" {
+  description = "argo-helm chart version"
   type        = string
-  default     = "emumba-assessment-app"
+  default     = "8.5.7"
 }
 
-variable "github_repo_url" {
-  type        = string
-  description = "HTTPS URL to the repo"
-  default     = "https://github.com/aliannus2/emumba-assessment-k8s-iac.git"
-}
-variable "github_pat" {
-  type        = string
-  description = "GitHub Personal Access Token (read-only)"
-  sensitive   = true
+variable "extra_values_yaml" {
+  description = "Optional extra Helm values as YAML strings (each item is a full YAML document)"
+  type        = list(string)
+  default     = []
 }
 
-variable "github_username" {
-  type        = string
-  description = "GitHub username or organization name"
-  default     = "aliannus2"
-}
+terraform {
 
-variable "kubeconfig_path" {
-  type        = string
-  description = "Path to kubeconfig file"
+  required_version = ">= 1.10.0"
+
+  required_providers {
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 2.30.0"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = ">= 2.13.0"
+    }
+    null = {
+      source  = "hashicorp/null"
+      version = ">= 3.2.4"
+    }
+  }
 }
