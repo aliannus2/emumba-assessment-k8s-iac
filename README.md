@@ -28,7 +28,7 @@ Create `infra/terraform.tfvars` with your local settings and GitHub token (**do 
 ```hcl
 # --- Cluster Configuration ---
 cluster_name        = "emumba-minikube-cluster"
-kubernetes_version  = "v1.30.0"
+kubernetes_version  = "v1.34.0"
 driver              = "docker"
 nodes               = 3
 cpus                = 4
