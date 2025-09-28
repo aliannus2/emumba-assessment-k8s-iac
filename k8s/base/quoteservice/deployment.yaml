@@ -17,12 +17,6 @@ spec:
         image: annasali2/emumba-quoteservice:latest
         ports: [{ containerPort: 5000 }]
         envFrom: [{ configMapRef: { name: quoteservice-config } }]
-        readinessProbe:
-          httpGet: { path: /healthz, port: 5000 }
-          initialDelaySeconds: 5
-        livenessProbe:
-          httpGet: { path: /healthz, port: 5000 }
-          initialDelaySeconds: 10
         resources:
           requests: { cpu: "100m", memory: "128Mi" }
           limits:   { cpu: "500m", memory: "512Mi" }
