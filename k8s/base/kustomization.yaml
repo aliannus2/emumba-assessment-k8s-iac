@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: emumba-assessment
+resources:
+  - namespace.yaml
+  - resourcequota.yaml
+  - rbac/role-readonly.yaml
+  - rbac/role-readwrite.yaml
+  - rbac/rolebinding-readonly.yaml
+  - rbac/rolebinding-readwrite.yaml
+  - apigateway/deployment.yaml
+  - apigateway/service.yaml
+  - apigateway/configmap.yaml
+  - apigateway/hpa.yaml
+  - quoteservice/deployment.yaml
+  - quoteservice/service.yaml
+  - quoteservice/configmap.yaml
+  - quoteservice/hpa.yaml
+  - frontend/deployment.yaml
+  - frontend/service.yaml
+  - frontend/configmap.yaml
+  - frontend/hpa.yaml

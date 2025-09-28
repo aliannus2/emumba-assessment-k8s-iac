@@ -15,3 +15,26 @@ variable "server_service_type" {
   type        = string
   default     = "NodePort"
 }
+
+variable "application_name" {
+  description = "Name of the Argo CD Application"
+  type        = string
+  default     = "emumba-assessment-app"
+}
+
+variable "github_repo_url" {
+  type        = string
+  description = "HTTPS URL to the repo"
+  default     = "https://github.com/aliannus2/emumba-assessment-k8s-iac.git"
+}
+variable "github_pat" {
+  type        = string
+  description = "GitHub Personal Access Token (read-only)"
+  sensitive   = true
+}
+
+variable "github_username" {
+  type        = string
+  description = "GitHub username or organization name"
+  default     = "aliannus2"
+}

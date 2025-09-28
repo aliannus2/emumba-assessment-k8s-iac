@@ -13,8 +13,11 @@ module "minikube" {
 }
 
 module "argocd" {
-  source     = "./modules/argocd"
+  source              = "./modules/argocd"
   namespace           = "argocd"
   release_name        = "argo-cd"
   server_service_type = "NodePort"
+  github_pat          = var.github_pat
+  github_repo_url     = var.github_repo_url
+  github_username     = var.github_username
 }

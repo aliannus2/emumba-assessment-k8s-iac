@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apigateway
+  namespace: emumba-assessment
+  labels: &lbl
+    app.kubernetes.io/name: apigateway
+    app.kubernetes.io/part-of: emumba-assessment-k8s-iac
+spec:
+  replicas: 2
+  selector: { matchLabels: *lbl }
+  template:
+    metadata: { labels: *lbl }
+    spec:
+      containers:
+      - name: apigateway
+        image: ghcr.io/your/repo/apigateway:dev    # TODO update
+        ports: [{ containerPort: 3000 }]
+        envFrom:
+        - configMapRef: { name: apigateway-config }
+        readinessProbe:
+          httpGet: { path: /api/status, port: 3000 }
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet: { path: /api/status, port: 3000 }
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          requests: { cpu: "100m", memory: "128Mi" }
+          limits:   { cpu: "500m", memory: "512Mi" }
+        topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels: *lbl

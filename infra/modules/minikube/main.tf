@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     null = {
-      source = "hashicorp/null"
+      source  = "hashicorp/null"
       version = "3.2.4"
     }
   }
@@ -25,7 +25,7 @@ locals {
 resource "null_resource" "minikube_cluster" {
   # Keep it simple: if any input changes, re-run using a single trigger
   triggers = {
-    cmd = local.start_cmd
+    cmd          = local.start_cmd
     profile_name = var.cluster_name
   }
 
@@ -34,7 +34,7 @@ resource "null_resource" "minikube_cluster" {
   }
 
   provisioner "local-exec" {
-    when    = destroy
+    when = destroy
     # Destroy-time provisioners may only reference self.*, so use trigger
     command = "minikube delete -p ${self.triggers.profile_name}"
   }

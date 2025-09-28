@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apigateway-config
+  namespace: emumba-assessment
+data:
+  QUOTE_SERVICE_URL: "http://quoteservice.emumba-assessment.svc.cluster.local:5000"
