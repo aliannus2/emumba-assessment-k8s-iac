@@ -29,7 +29,7 @@ kustomization.yaml.backup
 
 # Minikube / kubectl
 .kube/
-minikube/
+
 
 # IDE / Editor
 .vscode/
