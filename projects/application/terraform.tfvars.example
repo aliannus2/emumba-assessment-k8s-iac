@@ -1,0 +1,21 @@
+# Use the Minikube profile name you started the cluster with:
+cluster_name = "emumba-minikube-cluster"
+
+# Argo CD location
+argocd_namespace = "argocd"
+
+# App destination namespace
+application_namespace = "emumba-assessment"
+
+# Argo CD objects
+project_name     = "emumba-deployment"
+application_name = "emumba-assessment-app"
+
+# Repo details
+github_repo_url = "https://github.com/aliannus2/emumba-assessment-k8s-iac.git"
+github_pat      = "ghp_Qasdfasdgasdgasfs"
+repo_username   = "aliannus2"
+
+# Kustomize path and revision
+kustomize_path  = "k8s/overlays/dev"
+target_revision = "HEAD"

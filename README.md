@@ -1,174 +1,273 @@
-# GitOps Kubernetes Setup
+# Local GitOps on Minikube (Terraform + Argo CD)
 
-A simple GitOps-style local Kubernetes setup using **Terraform**, **Minikube**, **Argo CD**, and **Kustomize**.
+Spin up a local Kubernetes cluster with **Minikube**, install **Argo CD** via Helm, and deploy your app GitOps-style — all with Terraform.
+
+Each component is a **standalone Terraform project** (cluster / argocd / application), and there's an optional **all-in-one stack** that orchestrates all projects for a one-shot deployment.
+
+## Table of Contents
+
+- [Repository Layout](#repository-layout)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+- [Individual Project Deployment](#individual-project-deployment)
+- [Manifest Structure](#manifest-structure)
+- [Configuration](#configuration)
+- [Accessing Argo CD](#accessing-argo-cd)
+- [Cleanup](#cleanup)
+- [Troubleshooting](#troubleshooting)
+- [Notes](#notes)
+
+## Repository Layout
+
+```
+modules/
+├── cluster-minikube/    # Minikube cluster management (reusable)
+├── argocd/              # Argo CD Helm installation (reusable)
+└── application/         # Argo CD Project + Application (reusable)
+
+projects/
+├── cluster/             # Standalone TF: creates Minikube cluster
+├── argocd/              # Standalone TF: installs Argo CD
+└── application/         # Standalone TF: registers repo + Argo App
+
+stacks/
+└── all-in-one/          # Optional: orchestrates all 3 projects
+```
+
+> Each **project** has its own `providers.tf`, `variables.tf`, and `terraform.tfvars`.  
+> Providers read `~/.kube/config`. Application project sets `config_context = var.cluster_name`.
 
 ## Prerequisites
 
-Install the following tools for your operating system:
-- Docker
-- Terraform (>= 1.10)
-- Minikube
-- kubectl
-- Helm
-- Kustomize
+- **Terraform** ≥ 1.10.0
+- **Minikube** + **Docker** (or another supported driver)
+- **kubectl**, **Helm**, and **Kustomize**
+- A Git repository with your Kustomize layout (see [Manifest Structure](#manifest-structure))
+- A GitHub **Personal Access Token (PAT)** with read access to that repository
+
+> On Windows, use **PowerShell** or **Git Bash**. All commands below are provided as single lines.
 
 ## Getting Started
 
-### 1. Clone and Setup
+### 1. Configure Your Application Settings
+
+Before deploying, you need to configure your GitHub repository and credentials:
+
+1. **Navigate to the application project:**
+   ```bash
+   cd projects/application/
+   ```
+
+2. **Copy the example configuration:**
+   ```bash
+   cp terraform.tfvars.example terraform.tfvars
+   ```
+
+3. **Edit `terraform.tfvars` and update:**
+   - `github_repo_url`: Replace with your actual GitHub repository URL
+   - `github_pat`: Add your GitHub Personal Access Token (PAT) with read access to the repository
+
+   **⚠️ Security Note:** Instead of putting your PAT directly in the file, you can set it as an environment variable:
+   ```bash
+   export TF_VAR_github_pat="ghp_XXXXXXXXXXXXXXXX"
+   ```
+   Then leave `github_pat = ""` in the terraform.tfvars file.
+
+4. **Return to the repository root:**
+   ```bash
+   cd ../../
+   ```
+
+### 2. All-in-One Deployment
+
+The fastest way to get everything running! This stack orchestrates all three projects in the correct order.
+
+Run from `stacks/all-in-one/`:
 
 ```bash
-git clone <repository-url>
-cd emumba-assessment-k8s-iac
+terraform init && terraform apply -auto-approve
 ```
 
-### 2. Configure Terraform Variables
+The stack provides helpful outputs including Argo CD access instructions once deployment completes.
 
-Create `infra/terraform.tfvars` with your local settings and GitHub token (**do not** commit this file):
+## Individual Project Deployment
 
+If you prefer granular control, deploy each component individually. Run from the repository root - each project reads its **own** `terraform.tfvars`.
+
+### 1. Create Minikube Cluster
+```bash
+terraform -chdir=projects/cluster init -upgrade && terraform -chdir=projects/cluster apply -auto-approve
+```
+
+### 2. Install Argo CD
+```bash
+terraform -chdir=projects/argocd init -upgrade && terraform -chdir=projects/argocd apply -auto-approve
+```
+
+### 3. Deploy Application
+```bash
+terraform -chdir=projects/application init -upgrade && terraform -chdir=projects/application apply -auto-approve
+```
+
+## Manifest Structure
+
+Your Git repository should contain Kubernetes manifests organized with Kustomize. Here's the expected structure:
+
+```
+k8s/
+├── base/
+│   ├── namespace.yaml
+│   ├── resourcequota.yaml
+│   ├── rbac/
+│   │   ├── role-readonly.yaml
+│   │   ├── role-readwrite.yaml
+│   │   ├── rolebinding-readonly.yaml
+│   │   └── rolebinding-readwrite.yaml
+│   ├── apigateway/
+│   │   ├── deployment.yaml
+│   │   ├── service.yaml
+│   │   └── configmap.yaml
+│   ├── quoteservice/
+│   │   ├── deployment.yaml
+│   │   ├── service.yaml
+│   │   └── configmap.yaml
+│   ├── frontend/
+│   │   ├── deployment.yaml
+│   │   ├── service.yaml
+│   │   └── configmap.yaml
+│   └── kustomization.yaml
+└── overlays/
+    └── dev/
+        └── kustomization.yaml
+```
+
+The `kustomize_path` in your configuration should point to the overlay you want to deploy (e.g., `k8s/overlays/dev`).
+
+Configure each project by editing its respective `terraform.tfvars` file:
+
+### projects/cluster/terraform.tfvars
 ```hcl
-# --- Cluster Configuration ---
 cluster_name        = "emumba-minikube-cluster"
-kubernetes_version  = "v1.34.0"
 driver              = "docker"
-nodes               = 3
+nodes               = 1
 cpus                = 4
-memory              = "8192mb"
-cni                 = "bridge"
-delete_on_failure   = true
+memory              = 8192
+kubernetes_version  = "v1.34.0"
+cni                 = "flannel"
+extra_flags         = ["--addons=ingress,metrics-server", "--preload=false"]
+```
 
-# --- Argo CD Configuration ---
+### projects/argocd/terraform.tfvars
+```hcl
 namespace           = "argocd"
 release_name        = "argo-cd"
-server_service_type = "NodePort"
-
-# --- Repository Configuration ---
-github_repo_url     = "https://github.com/<your-username>/emumba-assessment-k8s-iac.git"
-github_pat          = "ghp_********"
+server_service_type = "ClusterIP"   # or "NodePort" / "LoadBalancer"
+chart_version       = "8.5.7"
+# extra_values_yaml = []
 ```
 
-### 3. Deploy the Stack
+### projects/application/terraform.tfvars
+```hcl
+cluster_name          = "emumba-minikube-cluster"   # Kubernetes context to use
+argocd_namespace      = "argocd"
+application_namespace = "emumba-assessment"
 
-From the `infra` directory, run Terraform to:
-- Start Minikube cluster
-- Install Argo CD
-- Bootstrap GitOps
+project_name          = "emumba-deployment"
+application_name      = "emumba-assessment-app"
+
+github_repo_url = "https://github.com/your-org/your-repo.git"
+github_pat      = ""                                 # Prefer env: TF_VAR_github_pat
+kustomize_path  = "k8s/overlays/dev"
+target_revision = "HEAD"
+```
+
+## All-in-One Stack
+
+This stack orchestrates all three projects in the correct order (init → apply).
+
+Run from `stacks/all-in-one/`:
 
 ```bash
-cd infra
-terraform init
-terraform apply -auto-approve
+terraform init && terraform apply -auto-approve
 ```
 
-### 4. Verify Deployment
+The stack provides helpful outputs including Argo CD access instructions.
 
-Check if everything is running correctly:
+## Accessing Argo CD
 
+### Get Admin Password
+
+**Bash/Git Bash:**
 ```bash
-# Check Argo CD applications
-kubectl -n argocd get appprojects,applications
-
-# Check application deployments
-kubectl -n emumba-assessment get deploy,svc
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 ```
 
-## GitOps Configuration
-
-This repository follows GitOps principles:
-
-- **Manifest Location**: All Kubernetes manifests are stored under `k8s/`
-- **Sync Path**: Argo CD syncs from `k8s/overlays/dev`
-- **Automated Deployment**: No manual `kubectl apply` required
-- **Change Tracking**: Argo CD automatically tracks and syncs repository changes
-
-### Repository Configuration
-
-If you fork this repository to a different location, update the `github_repo_url` in `infra/terraform.tfvars` before applying Terraform.
-
-### Environment Variables (Optional)
-
-For scripting purposes, you can set your GitHub PAT as an environment variable:
-
-**Windows:**
-```cmd
-set GITHUB_PAT=ghp_********
+**PowerShell:**
+```powershell
+$p=(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}"); [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($p))
 ```
 
-**Linux/macOS:**
+### Access the UI
+
+1. **Port-forward to Argo CD:**
+   ```bash
+   kubectl port-forward service/argo-cd-argocd-server -n argocd 8080:443
+   ```
+
+2. **Open:** https://localhost:8080
+
+3. **Login:** 
+   - Username: `admin`
+   - Password: (from commands above)
+
+## Cleanup
+
+Destroy resources in reverse order:
+
+### Individual Projects
 ```bash
-export GITHUB_PAT=ghp_********
+terraform -chdir=projects/application destroy -auto-approve
+terraform -chdir=projects/argocd destroy -auto-approve
+terraform -chdir=projects/cluster destroy -auto-approve
 ```
 
-> **Note:** Your PAT is only used by Terraform providers. Never commit it to the repository.
-
-## Directory Structure
-
-```
-emumba-assessment-k8s-iac/
-├── README.md
-├── infra/                          # Terraform infrastructure code
-│   ├── providers.tf
-│   ├── variables.tf
-│   ├── main.tf
-│   ├── outputs.tf
-│   └── terraform.tfvars            # Local config (not committed)
-├── modules/                        # Terraform modules
-│   └── minikube/
-│       ├── main.tf                 # Minikube cluster setup
-│       ├── variables.tf
-│       └── outputs.tf
-└── k8s/                           # Kubernetes manifests
-    ├── base/                      # Base configurations
-    │   ├── namespace.yaml
-    │   ├── resourcequota.yaml
-    │   ├── rbac/
-    │   │   ├── role-readonly.yaml
-    │   │   ├── role-readwrite.yaml
-    │   │   ├── rolebinding-readonly.yaml
-    │   │   └── rolebinding-readwrite.yaml
-    │   ├── apigateway/
-    │   │   ├── deployment.yaml
-    │   │   ├── service.yaml
-    │   │   └── configmap.yaml
-    │   ├── quoteservice/
-    │   │   ├── deployment.yaml
-    │   │   ├── service.yaml
-    │   │   └── configmap.yaml
-    │   ├── frontend/
-    │   │   ├── deployment.yaml
-    │   │   ├── service.yaml
-    │   │   └── configmap.yaml
-    │   └── kustomization.yaml
-    └── overlays/
-        └── dev/
-            └── kustomization.yaml
-```
-
-## Architecture Components
-
-- **Terraform**: Infrastructure as Code for cluster provisioning
-- **Minikube**: Local Kubernetes cluster
-- **Argo CD**: GitOps continuous deployment
-- **Kustomize**: Configuration management and overlays
-
-## Clean Up
-
-To destroy all resources and stop the Minikube cluster:
-
+### All-in-One Stack
+From `stacks/all-in-one/`:
 ```bash
-cd infra
-terraform destroy
+terraform destroy -auto-approve
 ```
-
-This will remove:
-- Minikube cluster
-- Argo CD installation
-- All GitOps applications and configurations
 
 ## Troubleshooting
 
-### Common Issues
+### Context not found / Connection refused
+- Ensure Minikube is running and `cluster_name` matches your Minikube profile
+- Check: `kubectl config get-contexts` and `minikube profile list`
 
-1. **Docker not running**: Ensure Docker Desktop is started before running Terraform
-2. **Port conflicts**: Check if required ports are available on your system
-3. **Resource limits**: Adjust CPU and memory settings in `terraform.tfvars` if needed
-4. **GitHub PAT permissions**: Ensure your PAT has appropriate repository access
+### Argo CD CRDs missing
+- Apply `projects/argocd` before `projects/application`
+
+### Port 8080 already in use
+- Change the local port: `kubectl port-forward ... 9090:443`
+
+### Windows CRLF issues in shell scripts
+- Use PowerShell for one-liners, or set `*.tf text eol=lf` in `.gitattributes`
+
+### Re-run a single stage
+- Just rerun its one-liner (e.g., `terraform -chdir=projects/argocd apply -auto-approve`)
+
+## Notes
+
+- **Argo CD Helm values include:**
+  - `installCRDs = true`
+  - `server.insecure = true` 
+  - Service type configurable via `server_service_type`
+
+- **Application project uses `kubernetes_manifest` to create:**
+  - Argo CD AppProject
+  - Argo CD Application (pointing at `github_repo_url` + `kustomize_path`)
+
+- **Security:** Always prefer `TF_VAR_github_pat` environment variable over committing tokens to files or shell history
+
+---
+
+**Happy GitOps-ing!** 🚀
