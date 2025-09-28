@@ -7,4 +7,3 @@ terraform {
     }
   }
 }
-# No provider blocks needed for null provider.

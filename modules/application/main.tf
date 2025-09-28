@@ -4,7 +4,7 @@ resource "kubernetes_namespace" "app" {
     name = var.application_namespace
     labels = {
       "app.kubernetes.io/name"       = var.application_name
-      "app.kubernetes.io/part-of"    = var.cluster_name # <- use cluster_name instead of a static project label
+      "app.kubernetes.io/part-of"    = var.cluster_name
       "app.kubernetes.io/managed-by" = "terraform"
     }
   }
