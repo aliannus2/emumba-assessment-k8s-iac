@@ -79,7 +79,7 @@ resource "null_resource" "application_apply" {
     bump      = "1"
   }
   provisioner "local-exec" {
-    command = "terraform -chdir=${self.triggers.dir} apply -auto-approve"
+    command = "terraform -chdir=${self.triggers.dir} apply -auto-approve -var='github_repo_url=${var.github_repo_url}' -var='github_pat=${var.github_pat}'"
   }
   provisioner "local-exec" {
     when    = destroy

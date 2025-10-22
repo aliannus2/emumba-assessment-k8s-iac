@@ -3,10 +3,10 @@ kind: Kustomization
 resources:
   - ../../base
 images:
-  - name: ghcr.io/your/repo/apigateway
+  - name: annasali2/emumba-apigateway:latest
     newTag: dev
-  - name: ghcr.io/your/repo/quoteservice
+  - name: annasali2/emumba-frontend:latest
     newTag: dev
-  - name: ghcr.io/your/repo/frontend
+  - name: annasali2/emumba-quoteservice:latest
     newTag: dev
 namespace: emumba-assessment
