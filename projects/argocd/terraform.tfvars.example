@@ -1,3 +1,0 @@
-# kubeconfig is hardcoded; nothing to set here unless you want overrides
-# server_service_type = "NodePort"
-# chart_version       = "8.5.7"

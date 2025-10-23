@@ -65,9 +65,9 @@ variable "target_revision" {
 terraform {
   required_version = ">= 1.10.0"
   required_providers {
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = ">= 2.38.0"
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = ">= 1.14.0"
     }
   }
 }

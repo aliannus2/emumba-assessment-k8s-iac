@@ -10,7 +10,7 @@ variable "driver" {
 
 variable "nodes" {
   type    = number
-  default = 1
+  default = 2
 }
 
 variable "cpus" {
@@ -18,12 +18,4 @@ variable "cpus" {
   default = 2
 }
 
-variable "memory" {
-  type    = string
-  default = "4g"
-}
 
-variable "cni" {
-  type    = string
-  default = "flannel"
-}

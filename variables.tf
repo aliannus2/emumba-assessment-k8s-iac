@@ -1,3 +1,44 @@
+variable "cluster_name" {
+  type    = string
+  default = "emumba-minikube-cluster"
+}
+variable "driver" {
+  type    = string
+  default = "docker"
+}
+variable "nodes" {
+  type    = number
+  default = 1
+}
+variable "cpus" {
+  type    = number
+  default = 4
+}
+variable "cni" {
+  type    = string
+  default = "flannel"
+}
+variable "namespace" {
+  type    = string
+  default = "argocd"
+}
+variable "release_name" {
+  type    = string
+  default = "argo-cd"
+}
+variable "server_service_type" {
+  type    = string
+  default = "NodePort"
+}
+variable "chart_version" {
+  type    = string
+  default = "8.5.7"
+}
+variable "extra_values_yaml" {
+  type    = list(string)
+  default = []
+}
+
 # You already defined cluster_name in providers.tf
 
 variable "argocd_namespace" {
