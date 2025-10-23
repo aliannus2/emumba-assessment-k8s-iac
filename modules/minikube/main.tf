@@ -3,6 +3,7 @@ resource "minikube_cluster" "default" {
   driver              = var.driver
   nodes               = var.nodes
   cpus                = var.cpus
+  memory = var.memory
   preload             = true
   cache_images        = true
   auto_update_drivers = true

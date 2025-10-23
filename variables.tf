@@ -8,11 +8,16 @@ variable "driver" {
 }
 variable "nodes" {
   type    = number
-  default = 1
+  default = 2
 }
 variable "cpus" {
   type    = number
   default = 4
+}
+
+variable "memory" {
+  type    = number
+  default = 8192
 }
 variable "cni" {
   type    = string

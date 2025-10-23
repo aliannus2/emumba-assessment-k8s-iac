@@ -5,6 +5,7 @@ module "minikube" {
   driver       = var.driver
   nodes        = var.nodes
   cpus         = var.cpus
+  memory = var.memory
 }
 
 

@@ -18,4 +18,8 @@ variable "cpus" {
   default = 2
 }
 
-
+variable "memory" {
+  type    = number
+  default = 8192
+  
+}
