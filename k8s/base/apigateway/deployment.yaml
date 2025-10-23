@@ -8,28 +8,42 @@ metadata:
     app.kubernetes.io/part-of: emumba-assessment-k8s-iac
 spec:
   replicas: 2
-  selector: { matchLabels: *albl }
+  selector:
+    matchLabels: *albl
   template:
-    metadata: { labels: *albl }
+    metadata:
+      labels: *albl
     spec:
-      containers:
-      - name: apigateway
-        image: annasali2/emumba-apigateway:latest
-        ports: [{ containerPort: 3000 }]
-        envFrom: [{ configMapRef: { name: apigateway-config } }]
-        readinessProbe:
-          httpGet: { path: /api/status, port: 3000 }
-          initialDelaySeconds: 5
-          periodSeconds: 5
-        livenessProbe:
-          httpGet: { path: /api/status, port: 3000 }
-          initialDelaySeconds: 10
-          periodSeconds: 10
-        resources:
-          requests: { cpu: "100m", memory: "128Mi" }
-          limits:   { cpu: "500m", memory: "512Mi" }
-        topologySpreadConstraints:
+      topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
           whenUnsatisfiable: ScheduleAnyway
-          labelSelector: { matchLabels: *albl }
+          labelSelector:
+            matchLabels: *albl
+      containers:
+        - name: apigateway
+          image: annasali2/emumba-apigateway:latest
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: apigateway-config
+          readinessProbe:
+            httpGet:
+              path: /api/status
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/status
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

@@ -26,12 +26,6 @@ module "argocd" {
 }
 
 
-resource "null_resource" "wait_for_cluster" {
-  triggers = {
-    host = module.minikube.host
-  }
-}
-
 module "application" {
   source = "./modules/application"
 
@@ -50,5 +44,5 @@ module "application" {
   kustomize_path  = var.kustomize_path
   target_revision = var.target_revision
 
-  depends_on = [ module.minikube, module.argocd, null_resource.wait_for_cluster ]
+  depends_on = [ module.argocd ]
 }
