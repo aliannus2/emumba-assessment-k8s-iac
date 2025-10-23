@@ -20,9 +20,7 @@ terraform {
   }
 }
 
-provider "minikube" { 
-  kubernetes_version = "v1.34.0"
-}
+provider "minikube" { }
 
 provider "kubernetes" {
   host                   = module.minikube.host
@@ -38,4 +36,15 @@ provider "helm" {
     client_key             = module.minikube.client_key
     cluster_ca_certificate = module.minikube.cluster_ca_certificate
   }
+}
+
+provider "kubectl" {
+  host                   = module.minikube.host
+  client_certificate     = module.minikube.client_certificate
+  client_key             = module.minikube.client_key
+  cluster_ca_certificate = module.minikube.cluster_ca_certificate
+
+  # Optional but recommended for local testing
+  load_config_file  = false
+  apply_retry_count = 10
 }

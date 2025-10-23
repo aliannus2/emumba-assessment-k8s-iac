@@ -25,11 +25,15 @@ module "argocd" {
   depends_on = [module.minikube]
 }
 
+resource "time_sleep" "wait_for_argocd" {
+  depends_on = [module.argocd]
+  create_duration = "45s"
+}
 
 module "application" {
   source = "./modules/application"
   providers = {
-    kubernetes = kubernetes
+    kubectl = kubectl
   }
 
   cluster_name          = var.cluster_name
@@ -47,5 +51,5 @@ module "application" {
   kustomize_path  = var.kustomize_path
   target_revision = var.target_revision
 
-  depends_on = [ module.argocd ]
+  depends_on = [time_sleep.wait_for_argocd]
 }
