@@ -28,6 +28,9 @@ module "argocd" {
 
 module "application" {
   source = "./modules/application"
+  providers = {
+    kubernetes = kubernetes
+  }
 
   cluster_name          = var.cluster_name
   argocd_namespace      = var.argocd_namespace

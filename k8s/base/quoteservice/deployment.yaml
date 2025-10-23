@@ -2,28 +2,30 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quoteservice
-  namespace: emumba-assessment
-  labels: &qlbl
+  labels:
     app.kubernetes.io/name: quoteservice
-    app.kubernetes.io/part-of: emumba-assessment-k8s-iac
 spec:
   replicas: 2
-  selector: { matchLabels: *qlbl }
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: quoteservice
   template:
-    metadata: { labels: *qlbl }
+    metadata:
+      labels:
+        app.kubernetes.io/name: quoteservice
     spec:
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: ScheduleAnyway
-          labelSelector:
-            matchLabels: *qlbl
       containers:
-      - name: quoteservice
-        image: annasali2/emumba-quoteservice:latest
-        ports: [{ containerPort: 5000 }]
-        envFrom: [{ configMapRef: { name: quoteservice-config } }]
-        resources:
-          requests: { cpu: "100m", memory: "128Mi" }
-          limits:   { cpu: "500m", memory: "512Mi" }
-        
+        - name: quoteservice
+          image: annasali2/emumba-quoteservice:latest
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: quoteservice-config
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

@@ -2,24 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: apigateway
-  namespace: emumba-assessment
-  labels: &albl
+  labels:
     app.kubernetes.io/name: apigateway
-    app.kubernetes.io/part-of: emumba-assessment-k8s-iac
 spec:
   replicas: 2
   selector:
-    matchLabels: *albl
+    matchLabels:
+      app.kubernetes.io/name: apigateway
   template:
     metadata:
-      labels: *albl
+      labels:
+        app.kubernetes.io/name: apigateway
     spec:
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: ScheduleAnyway
-          labelSelector:
-            matchLabels: *albl
       containers:
         - name: apigateway
           image: annasali2/emumba-apigateway:latest
@@ -33,13 +27,6 @@ spec:
               path: /api/status
               port: 3000
             initialDelaySeconds: 5
-            periodSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /api/status
-              port: 3000
-            initialDelaySeconds: 10
-            periodSeconds: 10
           resources:
             requests:
               cpu: "100m"

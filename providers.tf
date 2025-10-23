@@ -20,7 +20,9 @@ terraform {
   }
 }
 
-provider "minikube" {}
+provider "minikube" { 
+  kubernetes_version = "v1.34.0"
+}
 
 provider "kubernetes" {
   host                   = module.minikube.host
