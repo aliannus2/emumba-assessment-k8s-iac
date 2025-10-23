@@ -26,7 +26,14 @@ spec:
             httpGet:
               path: /api/status
               port: 3000
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+             path: /
+              port: 3000 
+            initialDelaySeconds: 10
+            periodSeconds: 10
           resources:
             requests:
               cpu: "100m"
