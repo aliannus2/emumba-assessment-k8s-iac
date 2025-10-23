@@ -1,6 +1,3 @@
-# ------------------------------------------------------------------------------
-# Application Namespace
-# ------------------------------------------------------------------------------
 resource "kubernetes_namespace" "app" {
   metadata {
     name = var.application_namespace
@@ -11,9 +8,6 @@ resource "kubernetes_namespace" "app" {
   }
 }
 
-# ------------------------------------------------------------------------------
-# Argo CD Repository Secret (only needed if repo is private)
-# ------------------------------------------------------------------------------
 resource "kubernetes_secret" "argocd_repo" {
   metadata {
     name      = var.repo_secret_name
@@ -25,7 +19,6 @@ resource "kubernetes_secret" "argocd_repo" {
 
   type = "Opaque"
 
-  # Use `stringData` to allow plaintext (Terraform auto-encodes to base64)
   data = {
     type     = "git"
     url      = var.github_repo_url
@@ -34,9 +27,6 @@ resource "kubernetes_secret" "argocd_repo" {
   }
 }
 
-# ------------------------------------------------------------------------------
-# Argo CD Project
-# ------------------------------------------------------------------------------
 resource "kubectl_manifest" "argocd_project" {
   yaml_body = <<-YAML
     apiVersion: argoproj.io/v1alpha1
@@ -57,9 +47,6 @@ resource "kubectl_manifest" "argocd_project" {
   YAML
 }
 
-# ------------------------------------------------------------------------------
-# Argo CD Application (deploys via Kustomize)
-# ------------------------------------------------------------------------------
 resource "kubectl_manifest" "argocd_application" {
   yaml_body = <<-YAML
     apiVersion: argoproj.io/v1alpha1
