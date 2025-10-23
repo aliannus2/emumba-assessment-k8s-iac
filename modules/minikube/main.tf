@@ -12,4 +12,7 @@ resource "minikube_cluster" "default" {
     "default-storageclass",
     "storage-provisioner"
   ]
+
+  apiserver_name = "localhost"
+  apiserver_ips = ["127.0.0.1"]
 }

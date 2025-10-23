@@ -4,9 +4,9 @@ resources:
   - ../../base
 images:
   - name: annasali2/emumba-apigateway:latest
-    newTag: dev
+    newTag: latest
   - name: annasali2/emumba-frontend:latest
-    newTag: dev
+    newTag: latest
   - name: annasali2/emumba-quoteservice:latest
-    newTag: dev
+    newTag: latest
 namespace: emumba-assessment

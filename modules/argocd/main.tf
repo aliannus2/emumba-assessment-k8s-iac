@@ -34,7 +34,7 @@ resource "helm_release" "argocd" {
   version    = var.chart_version
 
   wait    = true
-  timeout = 600
+  timeout = 800
 
   values = local.merged_values
 }
