@@ -7,16 +7,17 @@ metadata:
     app.kubernetes.io/name: quoteservice
     app.kubernetes.io/part-of: emumba-assessment-k8s-iac
 spec:
-  topologySpreadConstraints:
-    - maxSkew: 1
-      topologyKey: kubernetes.io/hostname
-      whenUnsatisfiable: ScheduleAnyway
-      labelSelector: { matchLabels: *qlbl }
   replicas: 2
   selector: { matchLabels: *qlbl }
   template:
     metadata: { labels: *qlbl }
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels: *qlbl
       containers:
       - name: quoteservice
         image: annasali2/emumba-quoteservice:latest
