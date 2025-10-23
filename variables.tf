@@ -12,7 +12,7 @@ variable "nodes" {
 }
 variable "cpus" {
   type    = number
-  default = 8
+  default = 6
 }
 
 variable "memory" {
