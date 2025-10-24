@@ -27,52 +27,118 @@ resource "kubernetes_secret" "argocd_repo" {
   }
 }
 
-resource "kubectl_manifest" "argocd_project" {
-  yaml_body = <<-YAML
-    apiVersion: argoproj.io/v1alpha1
-    kind: AppProject
-    metadata:
-      name: ${var.project_name}
-      namespace: ${var.argocd_namespace}
-    spec:
-      description: Project for ${var.application_name}
-      sourceRepos:
-        - "*"
-      destinations:
-        - namespace: "*"
-          server: "*"
-      clusterResourceWhitelist:
-        - group: "*"
-          kind: "*"
-  YAML
+resource "kubernetes_manifest" "argocd_project" {
+  manifest = {
+    apiVersion = "argoproj.io/v1alpha1"
+    kind       = "AppProject"
+    metadata = {
+      name      = var.project_name
+      namespace = var.argocd_namespace
+    }
+    spec = {
+      description = "Project for ${var.application_name}"
+      sourceRepos = ["*"]
+      destinations = [
+        {
+          namespace = "*"
+          server    = "*"
+        }
+      ]
+      clusterResourceWhitelist = [
+        {
+          group = "*"
+          kind  = "*"
+        }
+      ]
+    }
+  }
 }
 
-resource "kubectl_manifest" "argocd_application" {
-  yaml_body = <<-YAML
-    apiVersion: argoproj.io/v1alpha1
-    kind: Application
-    metadata:
-      name: ${var.application_name}
-      namespace: ${var.argocd_namespace}
-    spec:
-      project: ${var.project_name}
-      source:
-        repoURL: ${var.github_repo_url}
-        targetRevision: ${var.target_revision}
-        path: ${var.kustomize_path}
-      destination:
-        server: https://kubernetes.default.svc
-        namespace: ${var.application_namespace}
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - CreateNamespace=true
-  YAML
+# ------------------------------------------------------------------------------
+# Argo CD Application (deploys via Kustomize)
+# ------------------------------------------------------------------------------
+resource "kubernetes_manifest" "argocd_application" {
+  manifest = {
+    apiVersion = "argoproj.io/v1alpha1"
+    kind       = "Application"
+    metadata = {
+      name      = var.application_name
+      namespace = var.argocd_namespace
+    }
+    spec = {
+      project = var.project_name
+      source = {
+        repoURL        = var.github_repo_url
+        targetRevision = var.target_revision
+        path           = var.kustomize_path
+      }
+      destination = {
+        server    = "https://kubernetes.default.svc"
+        namespace = var.application_namespace
+      }
+      syncPolicy = {
+        automated = {
+          prune    = true
+          selfHeal = true
+        }
+        syncOptions = ["CreateNamespace=true"]
+      }
+    }
+  }
 
   depends_on = [
-    kubectl_manifest.argocd_project,
+    kubernetes_manifest.argocd_project,
     kubernetes_secret.argocd_repo
   ]
 }
+
+
+# resource "kubectl_manifest" "argocd_project" {
+#   yaml_body = <<-YAML
+#     apiVersion: argoproj.io/v1alpha1
+#     kind: AppProject
+#     metadata:
+#       name: ${var.project_name}
+#       namespace: ${var.argocd_namespace}
+#     spec:
+#       description: Project for ${var.application_name}
+#       sourceRepos:
+#         - "*"
+#       destinations:
+#         - namespace: "*"
+#           server: "*"
+#       clusterResourceWhitelist:
+#         - group: "*"
+#           kind: "*"
+#   YAML
+# }
+
+# resource "kubernetes_manifest" "argocd_application" {
+#   yaml_body = <<-YAML
+#     apiVersion: argoproj.io/v1alpha1
+#     kind: Application
+#     metadata:
+#       name: ${var.application_name}
+#       namespace: ${var.argocd_namespace}
+#     spec:
+#       project: ${var.project_name}
+#       source:
+#         repoURL: ${var.github_repo_url}
+#         targetRevision: ${var.target_revision}
+#         path: ${var.kustomize_path}
+#       destination:
+#         server: https://kubernetes.default.svc
+#         namespace: ${var.application_namespace}
+#       syncPolicy:
+#         automated:
+#           prune: true
+#           selfHeal: true
+#         syncOptions:
+#           - CreateNamespace=true
+#   YAML
+
+#   depends_on = [
+#     kubectl_manifest.argocd_project,
+#     kubernetes_secret.argocd_repo
+#   ]
+# }
